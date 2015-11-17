@@ -16,7 +16,6 @@ public class DisplayManager {
         try {
             init(); // initialize the context and set some options
             loop(); // the main loop of the program, this is repeated till the program is closed
- 
             glfwDestroyWindow(window); // destroys the specified window
         } finally {
             glfwTerminate(); // frees remaining resources and destroys window and cursor
