@@ -29,24 +29,13 @@ public class DisplayManager {
         try {
             init();
             loop();
- 
+            cleanUp(); // unbind and delete the buffers after using them
             glfwDestroyWindow(window);
         } finally {
-        	cleanUp(); // unbind and delete the buffers after using them
             glfwTerminate();
         }
     }
  
-    private void cleanUp() {
-    	GL20.glDisableVertexAttribArray(0); // disable VBO with index 0
-    	 
-    	GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0); // unbind VBOs
-    	GL15.glDeleteBuffers(vboId); // delete this VBO
-    	 
-    	GL30.glBindVertexArray(0); // unbind VAOs
-    	GL30.glDeleteVertexArrays(vaoId); // delete this VAO
-	}
-
 	private void init() {
         if ( glfwInit() != GL11.GL_TRUE )
             throw new IllegalStateException("Unable to initialize GLFW!");
@@ -65,20 +54,43 @@ public class DisplayManager {
         glfwMakeContextCurrent(window);
         GL.createCapabilities();
         
-        glfwSwapInterval(1);
+        glfwSwapInterval(0);
         
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         
         defineVertices(); // feed vertex data to OpenGL
     }
+	
+	private void loop() {
+        while ( glfwWindowShouldClose(window) == GL_FALSE ) {
+            glClear(GL_COLOR_BUFFER_BIT);
+            
+            renderTriangle(); // draws the triangle onto the screen
+            
+            glfwSwapBuffers(window);
+ 
+            glfwPollEvents();
+            
+            monitorFrameRate();
+        }
+    }
+	
+	private void cleanUp() {
+    	GL30.glBindVertexArray(vaoId); // bind the VAO
+    	GL20.glDisableVertexAttribArray(0); // disable VBO with index 0
+    	GL30.glBindVertexArray(0); // unbind VAOs
+    	GL30.glDeleteVertexArrays(vaoId); // delete this VAO
+    	
+    	GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0); // unbind VBOs from GL_ARRAY_BUFFER
+    	GL15.glDeleteBuffers(vboId); // delete this VBO
+	}
  
     private void defineVertices() {
     	float[] vertices = {
-    	        -0.5f, -0.5f, 0f, // lower left vertex
-    	        0.5f, -0.5f, 0f, // lower right vertex
-    	        0f, 0.5f, 0f, // top vertex
-        	};
-    	
+	        -0.5f, -0.5f, 0f, // lower left vertex
+	        0.5f, -0.5f, 0f, // lower right vertex
+	        0f, 0.5f, 0f }; // top vertex
+        	
     	FloatBuffer verticesBuffer = BufferUtils.createFloatBuffer(vertices.length); // allocate memory according to the size of vertices array
     	verticesBuffer.put(vertices); // uploads the vertices to the buffer
     	verticesBuffer.flip(); // flip the buffer, resetting the index to 0, making it ready to be read from
@@ -95,20 +107,6 @@ public class DisplayManager {
     	GL30.glBindVertexArray(0);	// unbind the VAO
 	}
 
-	private void loop() {
-        while ( glfwWindowShouldClose(window) == GL_FALSE ) {
-            glClear(GL_COLOR_BUFFER_BIT);
-            
-            renderTriangle(); // draws the triangle onto the screen
-            
-            glfwSwapBuffers(window);
- 
-            glfwPollEvents();
-            
-            monitorFrameRate();
-        }
-    }
-    
 	private void renderTriangle() {
 		GL30.glBindVertexArray(vaoId); // bind VAO
         GL20.glEnableVertexAttribArray(0); // enable VBO index 0
