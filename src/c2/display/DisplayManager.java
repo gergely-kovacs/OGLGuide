@@ -22,7 +22,6 @@ public class DisplayManager {
         try {
             init();
             loop();
- 
             glfwDestroyWindow(window);
         } finally {
             glfwTerminate();
