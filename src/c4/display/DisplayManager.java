@@ -29,10 +29,9 @@ public class DisplayManager {
         try {
             init();
             loop();
- 
+            cleanUp();
             glfwDestroyWindow(window);
         } finally {
-        	cleanUp();
             glfwTerminate();
         }
     }
@@ -77,14 +76,18 @@ public class DisplayManager {
     }
 	
 	private void cleanUp() {
+		GL30.glBindVertexArray(vaoId);
     	GL20.glDisableVertexAttribArray(0);
-    	 
-    	GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-    	GL15.glDeleteBuffers(vboVertexId);
-    	if (vboIndexId != 0) GL15.glDeleteBuffers(vboIndexId);
-    	 
     	GL30.glBindVertexArray(0);
     	GL30.glDeleteVertexArrays(vaoId);
+    	
+    	GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+    	GL15.glDeleteBuffers(vboVertexId);
+    	
+    	if (vboIndexId != 0) {
+    		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
+    		GL15.glDeleteBuffers(vboIndexId);
+    	}
 	}
  
 	// this defines 6 vertices in order to make a square
@@ -120,18 +123,18 @@ public class DisplayManager {
     // this one uses an indexing vbo, it goes with renderSquareWithDrawElements
     private void defineSquareWithIndexing() {
     	float[] vertices = {
-    	        -0.5f, 0.5f, 0f,	// 0 - top left
-    	        -0.5f, -0.5f, 0f,	// 1 - bottom left
-    	        0.5f, -0.5f, 0f,	// 2 - bottom right
-    	        0.5f, 0.5f, 0f };	// 3 - top right
+	        -0.5f, 0.5f, 0f,	// 0 - top left
+	        -0.5f, -0.5f, 0f,	// 1 - bottom left
+	        0.5f, -0.5f, 0f,	// 2 - bottom right
+	        0.5f, 0.5f, 0f };	// 3 - top right
         	
     	FloatBuffer verticesBuffer = BufferUtils.createFloatBuffer(vertices.length);
     	verticesBuffer.put(vertices);
     	verticesBuffer.flip();
     	
     	byte[] indices = {
-    	        0, 1, 2,	// Left bottom triangle
-    	        0, 2, 3 };	// Right top triangle
+	        0, 1, 2,	// Left bottom triangle
+	        0, 2, 3 };	// Right top triangle
     	
     	ByteBuffer indicesBuffer = BufferUtils.createByteBuffer(indices.length);
     	indicesBuffer.put(indices);
@@ -173,6 +176,7 @@ public class DisplayManager {
 	private void renderSquareWithDrawElements() {
 		GL30.glBindVertexArray(vaoId);
 		GL20.glEnableVertexAttribArray(0);
+		
 		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, vboIndexId); // bind index VBO
 		 
 		// the indexing VBO is fed from a byte array, thus GL_UNSIGNED_BYTE is used here
@@ -180,6 +184,7 @@ public class DisplayManager {
 		GL11.glDrawElements(GL11.GL_TRIANGLES, 6, GL11.GL_UNSIGNED_BYTE, 0);
 		 
 		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
+		
 		GL20.glDisableVertexAttribArray(0);
 		GL30.glBindVertexArray(0);
 	}
