@@ -223,7 +223,7 @@ public class DisplayManager {
 	// written by Mathias Verboven
 	public int loadShader(String filename, int type) {
 	    StringBuilder shaderSource = new StringBuilder();
-	    int shaderID;
+	    int shaderID = 0;
 	     
 	    try {
 	        BufferedReader reader = new BufferedReader(new FileReader(filename));
